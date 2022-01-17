@@ -1,0 +1,58 @@
+version: "3.8"
+
+services:
+  mariadb:
+    image: mariadb:latest
+    container_name: mariadb
+    volumes:
+      - ./db_data:/var/lib/mysql
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      TZ: Asia/Bangkok
+      MYSQL_ROOT_PASSWORD: P@ssw0rd
+      MYSQL_USER: root
+      MYSQL_PASSWORD: P@ssw0rd
+  pma:
+    depends_on:
+      - mariadb
+    container_name: pma
+    image: phpmyadmin:latest
+    links:
+     - mariadb:db
+    ports:
+      - "8080:80"
+    restart: always
+    environment:
+      PMA_HOST: mariadb
+      MYSQL_ROOT_PASSWORD: P@ssw0rd
+  nodered:
+    image: nodered/node-red
+    container_name: node-red
+    ports:
+      - "1880:1880"
+    volumes:
+      - ./nodered_data:/node-red/data
+    restart: always
+  mongo:
+      image: mongo:latest
+      container_name: mongo
+      volumes:
+        - ./mongo_data:/data/db
+      command: [--auth]
+      environment:
+        MONGO_INITDB_ROOT_USERNAME: admin
+        MONGO_INITDB_ROOT_PASSWORD: P@ssw0rd
+      ports:
+        - "27017:27017"
+      restart: always
+  web:
+     image: nginx:1.21.5-alpine
+     container_name: wrk-nginx
+     restart: always
+     ports: 
+      - "8888:80"
+     volumes: 
+      - ./html/:/usr/share/nginx/html
+      - ./nginx/:/etc/nginx.conf
